@@ -17,10 +17,12 @@ const cartStore = useCartStore()
 const router = useRouter()
 const searchQuery = ref('')
 
+// 1. Aksi Utama: Ketika pengguna menekan tombol ENTER di kolom pencarian
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
+    // Pindah secara penuh ke halaman SearchView.vue sambil mengangkut kata kunci di URL (misal: /search?q=nike)
     router.push({ name: 'search', query: { q: searchQuery.value } })
-    showDropdown.value = false
+    showDropdown.value = false // Tutup kotak saran pencarian
   }
 }
 
@@ -28,6 +30,8 @@ const searchResults = ref<any[]>([])
 const showDropdown = ref(false)
 let searchTimeout: any = null
 
+// 2. Fitur AUTOCOMPLETE (Saran Pencarian Cepat/Live Search)
+// watch bertugas mengintai setiap huruf yang diketik pengguna secara real-time
 watch(searchQuery, (newVal) => {
   if (!newVal.trim()) {
     searchResults.value = []
@@ -35,10 +39,15 @@ watch(searchQuery, (newVal) => {
     return
   }
   
+  // Teknik DEBOUNCE: Sangat penting untuk performa server!
+  // Alih-alih mengirim data ke server setiap 1 huruf diketik (bisa bikin server jebol),
+  // sistem akan menunggu 300 milidetik setelah pengguna BERHENTI MENGETIK, barulah request dikirim.
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(async () => {
     try {
+      // Mengetuk server untuk mencari data mentah sesuai huruf yang diketik
       const response = await ProductService.getProducts({ search: newVal })
+      // Ambil maksimal 5 sepatu teratas saja untuk ditampilkan di kotak dropdown kecil
       searchResults.value = (response.data as any[] || []).slice(0, 5)
       showDropdown.value = true
     } catch (e) {

@@ -5,12 +5,17 @@ import type { Product, Brand } from '@/types/product'
 import type { Category } from '@/types/category'
 
 export const useProductStore = defineStore('product', () => {
+  // 1. GLOBAL STATE (CACHING): Bertindak sebagai "Gudang Penyimpanan" sementara.
+  // Daripada setiap halaman harus meminta daftar kategori/merek ke backend berulang kali,
+  // kita cukup menyimpannya di sini agar website jauh lebih cepat dan irit kuota server (cukup 1x loading).
   const products = ref<Product[]>([])
   const trendingProducts = ref<Product[]>([])
   const brands = ref<Brand[]>([])
   const categories = ref<Category[]>([])
   const loading = ref(false)
   const error = ref('')
+
+  // 2. ACTIONS: Fungsi-fungsi untuk mengambil barang dari backend dan menaruhnya ke "Gudang" di atas
 
   const fetchProducts = async (params?: any) => {
     loading.value = true

@@ -8,7 +8,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/api/axios'
+import OrderService from '@/services/OrderService'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -27,10 +27,15 @@ const postalCode = ref('')
 
 const isSubmitting = ref(false)
 
-onMounted(() => {
+onMounted(async () => {
   if (!authStore.token) {
     router.push('/login')
     return
+  }
+  
+  // Memastikan data profil pengguna sudah diambil dari backend (berguna jika user baru saja me-refresh halaman)
+  if (!authStore.user) {
+    await authStore.fetchProfile()
   }
   
   // Auto-fill form data from user profile
@@ -75,13 +80,13 @@ const handlePayment = async () => {
       payment_method: 'xendit'
     }
     
-    const { data } = await api.post('/checkout', payload)
+    const response = await OrderService.checkout(payload)
     
     // Keranjang berhasil dicheckout, redirect ke halaman payment
-    cartStore.cart = null // Reset cart di sisi frontend
+    cartStore.clearCart() // Reset cart di sisi frontend
     
     // Cek struktur response (tergantung backend mengembalikan data atau data.data)
-    const orderId = data.id || data.data?.id || data.order?.id
+    const orderId = (response as any).id || (response as any).data?.id || (response as any).order?.id
     if (orderId) {
       router.push(`/payment/${orderId}`)
     } else {

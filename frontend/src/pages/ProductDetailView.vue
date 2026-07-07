@@ -216,10 +216,10 @@ const addToWishlist = async () => {
           <span class="text-sm font-bold text-[#3771C8] uppercase tracking-wide block mb-2 hover:opacity-80 transition">{{ product.brand?.name || 'Brand' }}</span>
           <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight">{{ product.name }}</h1>
           
-          <div v-if="product.discount_price" class="mb-8 flex items-center gap-3">
+          <div v-if="product.discount_percentage && product.discount_percentage > 0" class="mb-8 flex items-center gap-3">
             <div class="text-3xl font-extrabold text-gray-900">{{ formatPrice(product.discount_price) }}</div>
             <div class="text-lg text-gray-500 line-through font-medium">{{ formatPrice(product.price) }}</div>
-            <div class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-md font-bold uppercase tracking-wider ml-2" v-if="product.discount_percentage">
+            <div class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-md font-bold uppercase tracking-wider ml-2">
               {{ product.discount_percentage }}% OFF
             </div>
           </div>

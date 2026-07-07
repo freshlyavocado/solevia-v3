@@ -18,5 +18,9 @@ export default {
   async cancelOrder(id: number): Promise<ApiResponse<any>> {
     const response = await apiClient.put(`/orders/${id}/cancel`)
     return response.data
+  },
+  async payOrder(id: number | string): Promise<ApiResponse<any>> {
+    const response = await apiClient.post(`/orders/${id}/pay`)
+    return response.data
   }
 }

@@ -9,8 +9,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/product'
 import ProductCard from '@/components/ui/ProductCard.vue'
-import api from '@/api/axios'
-import type { Brand } from '../types'
+import ProductService from '@/services/ProductService'
+import type { Brand } from '@/types/product'
 
 const route = useRoute()
 const productStore = useProductStore()
@@ -24,8 +24,8 @@ const priceRange = ref<number>(5000000)
 const fetchBrandAndProducts = async () => {
   loading.value = true
   try {
-    const response = await api.get(`/brands/${route.params.id}`)
-    brand.value = response.data.data || response.data
+    const response = await ProductService.getBrandById(route.params.id as string)
+    brand.value = (response as any).data?.data || (response as any).data || response
     if (productStore.products.length === 0) {
       await productStore.fetchProducts()
     }
@@ -45,19 +45,23 @@ onMounted(() => {
 
 const filteredProducts = computed(() => {
   if (!brand.value) return []
+  
+  // 1. Minta Vue untuk menyaring (mem-filter) seluruh daftar produk yang ada
   return productStore.products.filter(p => {
-    // Match brand (Laravel resource returns 'brand' object, not 'brand_id' directly)
-    if (p.brand?.id !== brand.value?.id) return false
+    // 2. FILTER MEREK (WAJIB): Pastikan sepatu ini adalah milik merek halaman saat ini (Misal halaman Nike)
+    // (Penting: Laravel resource mengirimkan objek 'brand' yang berisi ID, sehingga kita cocokkan ID-nya)
+    if (p.brand?.id !== brand.value?.id) return false // Gugur: Ini bukan produk merek ini! Buang.
     
-    // Match categories
+    // 3. FILTER KATEGORI (Dropdown): Cek apakah pengunjung memilih kategori spesifik (Men/Women/Kids)
     if (selectedCategory.value && p.category) {
-      if (p.category.name !== selectedCategory.value) return false
+      if (p.category.name !== selectedCategory.value) return false // Gugur: Kategori tidak sesuai dengan pilihan
     }
 
-    // Match price range
+    // 4. FILTER HARGA (Slider Range): Cek apakah harga produk melampaui batas budget yang digeser pengunjung
     const effectivePrice = p.discount_price || p.price
-    if (effectivePrice > priceRange.value) return false
+    if (effectivePrice > priceRange.value) return false // Gugur: Sepatu ini terlalu mahal
 
+    // Jika produk lulus semua syarat (Merek Benar, Kategori Benar, Harga Masuk Budget), cetak ke layar!
     return true
   })
 })

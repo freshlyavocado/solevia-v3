@@ -19,5 +19,9 @@ export default {
   async getBrands(): Promise<ApiResponse<Brand[]>> {
     const response = await apiClient.get('/brands')
     return response.data
+  },
+  async getBrandById(id: string | number): Promise<ApiResponse<Brand>> {
+    const response = await apiClient.get(`/brands/${id}`)
+    return response.data
   }
 }

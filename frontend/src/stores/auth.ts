@@ -4,14 +4,16 @@ import type { User } from '@/types/user'
 import AuthService from '@/services/AuthService'
 
 export const useAuthStore = defineStore('auth', () => {
-  // State (Data yang disimpan)
+  // 1. STATE (Memori Ingatan): Menyimpan data yang bisa dibaca seluruh halaman
   const user = ref<User | null>(null)
+  // Ambil token dari memori browser (localStorage) agar user tetap login meski halaman ditutup/refresh
   const token = ref<string | null>(localStorage.getItem('token') || null)
 
-  // Action (Fungsi untuk mengubah state)
+  // 2. ACTIONS (Fungsi Pengubah Ingatan)
   const setAuth = (userData: User, authToken: string) => {
     user.value = userData
     token.value = authToken
+    // Simpan token ke localStorage sebagai "Kunci Masuk" permanen
     localStorage.setItem('token', authToken)
   }
 

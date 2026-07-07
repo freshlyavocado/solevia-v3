@@ -19,7 +19,7 @@ onMounted(() => {
 
 // Filter products that have a discount
 const dealsProducts = computed(() => {
-  return productStore.products.filter(p => p.discount_price !== null && p.discount_price !== undefined)
+  return productStore.products.filter(p => p.discount_percentage && p.discount_percentage > 0)
 })
 </script>
 

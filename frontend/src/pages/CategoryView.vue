@@ -45,24 +45,26 @@ const categoryName = computed(() => {
 })
 
 const filteredProducts = computed(() => {
+  // 1. Minta Vue untuk menyaring (mem-filter) seluruh daftar produk yang ada
   return productStore.products.filter(p => {
-    // Match category
+    // 2. FILTER KATEGORI: Pastikan kategori produk (di DB) sesuai dengan URL Kategori saat ini (misal: "Men")
     const catNameDb = p.category?.name.toLowerCase() || ''
     const currentCat = categoryName.value.toLowerCase()
-    // Exact match or match with 's (e.g. Men's)
     if (catNameDb !== currentCat && catNameDb !== currentCat + "'s" && catNameDb !== currentCat + "s") {
-      return false
+      return false // Gugur: Kategori tidak sesuai, jangan tampilkan sepatu ini
     }
     
-    // Match brands
+    // 3. FILTER MEREK (Dropdown): Cek jika pengunjung memilih merek spesifik di dropdown
     if (selectedBrand.value && p.brand) {
-      if (p.brand.name !== selectedBrand.value) return false
+      if (p.brand.name !== selectedBrand.value) return false // Gugur: Merek beda dengan pilihan pengunjung
     }
 
-    // Match price range
+    // 4. FILTER HARGA (Slider Range): Cek jika pengunjung menurunkan batas maksimal harga
+    // Gunakan harga diskon jika ada, jika tidak gunakan harga asli
     const effectivePrice = p.discount_price || p.price
-    if (effectivePrice > priceRange.value) return false
+    if (effectivePrice > priceRange.value) return false // Gugur: Harganya lebih mahal dari budget slider
 
+    // Jika sepatu ini berhasil melewati semua pemeriksaan di atas (tidak gugur), maka tampilkan!
     return true
   })
 })

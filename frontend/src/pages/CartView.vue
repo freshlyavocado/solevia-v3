@@ -49,9 +49,16 @@ const subtotal = computed(() => {
 const total = computed(() => subtotal.value)
 
 // Fungsi untuk menambah atau mengurangi jumlah barang spesifik di keranjang
-const updateQuantity = async (itemId: number, currentQty: number, change: number) => {
+const updateQuantity = async (itemId: number, currentQty: number, change: number, maxStock: number = 999) => {
   const newQty = currentQty + change
   if (newQty < 1) return // Tidak bisa kurang dari 1
+  
+  // Mencegah user mengklik tombol + melebihi stok database
+  if (newQty > maxStock) {
+    alert(`Sorry, you can't add more than the available stock (${maxStock} items).`)
+    return
+  }
+
   await cartStore.updateItem(itemId, newQty) // Memperbarui ke backend via store
 }
 
@@ -72,7 +79,7 @@ const removeItem = async (itemId: number) => {
 
     <h1 class="text-3xl font-extrabold text-gray-900 mb-10 uppercase tracking-tight">Your Cart</h1>
 
-    <div v-if="cartStore.loading && !cartStore.cart" class="flex justify-center py-20">
+    <div v-if="cartStore.loading && cartStore.items.length === 0" class="flex justify-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3771C8]"></div>
     </div>
 
@@ -125,11 +132,11 @@ const removeItem = async (itemId: number) => {
             <div class="flex items-center justify-between mt-4">
               <!-- Quantity Controls -->
               <div class="flex items-center border border-gray-300 rounded-full bg-white px-2 py-1">
-                <button @click="updateQuantity(item.id, item.quantity, -1)" class="p-1 text-gray-500 hover:text-[#3771C8] transition" :disabled="cartStore.loading">
+                <button @click="updateQuantity(item.id, item.quantity, -1, item.variant?.stock)" class="p-1 text-gray-500 hover:text-[#3771C8] transition" :disabled="cartStore.loading">
                   <Minus class="w-4 h-4" />
                 </button>
                 <span class="w-8 text-center font-bold text-sm">{{ item.quantity }}</span>
-                <button @click="updateQuantity(item.id, item.quantity, 1)" class="p-1 text-gray-500 hover:text-[#3771C8] transition" :disabled="cartStore.loading">
+                <button @click="updateQuantity(item.id, item.quantity, 1, item.variant?.stock)" class="p-1 text-gray-500 hover:text-[#3771C8] transition" :disabled="cartStore.loading">
                   <Plus class="w-4 h-4" />
                 </button>
               </div>

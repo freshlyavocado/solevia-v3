@@ -7,7 +7,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/api/axios'
+import OrderService from '@/services/OrderService'
 import { CreditCard, QrCode } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -29,8 +29,8 @@ onMounted(async () => {
   }
 
   try {
-    const { data } = await api.get(`/orders/${orderId}`)
-    order.value = data.data || data
+    const response = await OrderService.getOrderById(orderId as unknown as number)
+    order.value = (response as any).data || response
   } catch (error) {
     console.error('Failed to fetch order', error)
     alert('Order not found.')
@@ -48,10 +48,11 @@ const processPayment = async () => {
   isProcessing.value = true
   try {
     // Memanggil endpoint Xendit untuk mendapatkan link Invoice URL
-    const { data } = await api.post(`/orders/${orderId}/pay`, { method: paymentMethod.value })
+    const response = await OrderService.payOrder(route.params.id as string)
+    const data = response.data || response
     
+    // Jika berhasil, alihkan browser ke halaman Xendit
     if (data.invoice_url) {
-      // Jika berhasil, alihkan browser ke halaman Xendit
       if (data.message) {
          // Pesan bahwa ini fallback jika API Key Secret tidak diset
          console.warn(data.message);

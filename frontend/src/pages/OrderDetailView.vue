@@ -7,7 +7,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/api/axios'
+import OrderService from '@/services/OrderService'
 import { ArrowLeft } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -25,8 +25,8 @@ onMounted(async () => {
   }
 
   try {
-    const { data } = await api.get(`/orders/${orderId}`)
-    order.value = data.data || data
+    const response = await OrderService.getOrderById(Number(orderId))
+    order.value = (response as any).data || response
   } catch (error) {
     console.error('Failed to fetch order details', error)
     alert('Order not found.')
@@ -48,11 +48,11 @@ const formatDate = (dateString: string) => {
 const cancelOrder = async () => {
   if (!confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')) return
   try {
-    await api.put(`/orders/${orderId}/cancel`)
+    await OrderService.cancelOrder(Number(orderId))
     alert('Pesanan berhasil dibatalkan.')
     // Refresh data pesanan
-    const { data } = await api.get(`/orders/${orderId}`)
-    order.value = data.data || data
+    const response = await OrderService.getOrderById(Number(orderId))
+    order.value = (response as any).data || response
   } catch (error: any) {
     alert(error.response?.data?.message || 'Gagal membatalkan pesanan.')
   }

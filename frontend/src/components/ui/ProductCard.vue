@@ -64,7 +64,7 @@ const formatPrice = (price: number) => {
         {{ product.name }}
       </RouterLink>
       <div class="mt-auto pt-2">
-        <div v-if="product.discount_price" class="flex items-center gap-2">
+        <div v-if="product.discount_percentage && product.discount_percentage > 0" class="flex items-center gap-2">
           <span class="text-xl font-bold text-gray-900">{{ formatPrice(product.discount_price) }}</span>
           <span class="text-sm text-gray-500 line-through">{{ formatPrice(product.price) }}</span>
         </div>

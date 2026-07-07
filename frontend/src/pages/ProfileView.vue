@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import api from '@/api/axios'
+import OrderService from '@/services/OrderService'
 import { RouterLink, useRouter } from 'vue-router'
 
 const authStore = useAuthStore() // Akses data user yang login
@@ -48,8 +48,8 @@ onMounted(async () => {
   }
   try {
     // Memanggil API pesanan (hanya mengembalikan pesanan milik user ini)
-    const { data } = await api.get('/orders')
-    orders.value = data.data || data // Simpan ke state
+    const response = await OrderService.getOrders()
+    orders.value = (response as any).data || response // Simpan ke state
   } catch (error) {
     console.error('Failed to load orders', error)
   } finally {

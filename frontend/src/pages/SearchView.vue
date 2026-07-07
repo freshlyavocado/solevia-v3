@@ -9,7 +9,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProductStore } from '@/stores/product'
 import ProductCard from '@/components/ui/ProductCard.vue'
-import api from '@/api/axios'
+import ProductService from '@/services/ProductService'
 import type { Product } from '@/types/product'
 
 const route = useRoute()
@@ -32,8 +32,8 @@ const fetchSearchResults = async () => {
 
   loading.value = true
   try {
-    const { data } = await api.get('/products', { params: { search: query, per_page: 100 } })
-    products.value = data.data || data
+    const response = await ProductService.getProducts({ search: query, per_page: 100 })
+    products.value = (response as any).data?.data || (response as any).data || response
     if (productStore.brands.length === 0) {
       await productStore.fetchBrands()
     }
@@ -60,19 +60,24 @@ watch(() => route.query.q, () => {
 })
 
 const filteredProducts = computed(() => {
+  // 1. Minta Vue untuk menyaring ulang (mem-filter) hasil pencarian mentah dari Backend
   return products.value.filter(p => {
-    // Brand filter
+    // 2. FILTER MEREK (Dropdown): Cek jika pengunjung memilih merek spesifik
     if (selectedBrand.value && p.brand) {
-      if (p.brand.name !== selectedBrand.value) return false
+      if (p.brand.name !== selectedBrand.value) return false // Gugur: Merek beda dengan pilihan
     }
-    // Category filter
-    if (selectedCategory.value && p.category) {
-      if (p.category.name !== selectedCategory.value) return false
-    }
-    // Price filter
-    const effectivePrice = p.discount_price || p.price
-    if (effectivePrice > priceRange.value) return false
     
+    // 3. FILTER KATEGORI (Dropdown): Cek jika pengunjung memilih kategori spesifik (Men/Women/Kids)
+    if (selectedCategory.value && p.category) {
+      if (p.category.name !== selectedCategory.value) return false // Gugur: Kategori tidak sesuai
+    }
+    
+    // 4. FILTER HARGA (Slider): Cek jika pengunjung membatasi budget harga maksimal
+    // Selalu prioritaskan penggunaan harga diskon (jika ada) untuk perhitungan yang lebih akurat
+    const effectivePrice = p.discount_price || p.price
+    if (effectivePrice > priceRange.value) return false // Gugur: Terlalu mahal dari batas slider
+    
+    // Jika sepatu berhasil lolos semua filter di atas, tampilkan sebagai hasil akhir pencarian!
     return true
   })
 })

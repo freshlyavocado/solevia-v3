@@ -122,7 +122,15 @@ class OrderController extends Controller
         // Kosongkan keranjang
         $cart->items()->delete();
 
-        $order->load(['items.variant.product', 'payment', 'shipping']);
+        $order->load(['items.variant.product', 'payment', 'shipping', 'user']);
+
+        // Kirim Email Invoice ke Pengguna
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OrderInvoiceMail($order));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal mengirim email invoice: ' . $e->getMessage());
+        }
+
         return new OrderResource($order);
     }
 
