@@ -8,9 +8,11 @@ RUN apk update && apk add --no-cache \
     libxml2-dev \
     zip \
     unzip \
-    linux-headers
+    linux-headers \
+    icu-dev \
+    libzip-dev
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -26,7 +28,9 @@ FROM php:8.4-fpm-alpine
 RUN apk update && apk add --no-cache \
     libpng \
     oniguruma \
-    libxml2
+    libxml2 \
+    icu-libs \
+    libzip
 
 WORKDIR /var/www
 
