@@ -37,6 +37,14 @@ jobs:
           push: true
           tags: ghcr.io/freshlyavocado/solevia-backend:latest
 
+      - name: Build and Push Webserver
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile.nginx
+          push: true
+          tags: ghcr.io/freshlyavocado/solevia-webserver:latest
+
   deploy:
     needs: build-and-push
     runs-on: self-hosted
