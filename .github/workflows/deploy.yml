@@ -61,5 +61,19 @@ jobs:
           docker compose pull
           docker compose up -d
 
-      - name: Run Laravel Migrations
-        run: docker exec solevia-backend php artisan migrate --force
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Waiting for MySQL..."
+          for i in $(seq 1 30); do
+            if docker exec solevia-db mysqladmin ping -h localhost -u root -p12345 --silent 2>/dev/null; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Attempt $i/30 - MySQL not ready yet, waiting 5s..."
+            sleep 5
+          done
+
+      - name: Generate APP_KEY and Run Migrations
+        run: |
+          docker exec solevia-backend php artisan key:generate --force
+          docker exec solevia-backend php artisan migrate --force

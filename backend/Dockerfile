@@ -25,12 +25,24 @@ RUN composer install --optimize-autoloader --no-dev
 
 FROM php:8.4-fpm-alpine
 
+# Install runtime libraries DAN dev packages untuk kompilasi ekstensi
 RUN apk update && apk add --no-cache \
     libpng \
+    libpng-dev \
     oniguruma \
+    oniguruma-dev \
     libxml2 \
+    libxml2-dev \
     icu-libs \
-    libzip
+    icu-dev \
+    libzip \
+    libzip-dev \
+    linux-headers \
+    # Install ekstensi PHP (WAJIB di stage ini juga, karena tidak ikut tercopy dari builder)
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip \
+    # Hapus dev packages setelah kompilasi selesai (untuk mengecilkan ukuran image)
+    && apk del libpng-dev oniguruma-dev libxml2-dev icu-dev libzip-dev linux-headers \
+    && rm -rf /var/cache/apk/*
 
 WORKDIR /var/www
 
@@ -41,5 +53,3 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 EXPOSE 9000
 
 CMD [ "php-fpm" ]
-
-
