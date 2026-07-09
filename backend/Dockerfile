@@ -1,4 +1,4 @@
-FROM php:8.2-fpm-alpine AS builder 
+FROM php:8.3-fpm-alpine AS builder 
 
 RUN apk update && apk add --no-cache \
     git \
@@ -21,7 +21,7 @@ COPY . .
 RUN composer install --optimize-autoloader --no-dev
 
 
-FROM php:8.2-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 RUN apk update && apk add --no-cache \
     libpng \
