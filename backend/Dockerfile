@@ -48,6 +48,9 @@ WORKDIR /var/www
 
 COPY --from=builder /var/www /var/www
 
+# Buat .env dari .env.example jika belum ada
+RUN cp -n /var/www/.env.example /var/www/.env || true
+
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000
